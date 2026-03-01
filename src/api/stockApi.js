@@ -3,6 +3,8 @@
  * Fetches real-time and historical data from Tencent's public APIs
  */
 
+import { searchLocalDatabase } from '../data/stockDatabase';
+
 /**
  * Fetches real A-Share historical data using Tencent's JSONP API.
  * @param {string} code - Stock code (e.g., '600519', '000001')
@@ -106,7 +108,7 @@ export const fetchBatchPrices = async (codes) => {
 
 /**
  * Fuzzy searches stocks using Tencent Smartbox API.
- * Enhanced with better error handling and multiple proxy support.
+ * Enhanced with local database fallback for reliability.
  *
  * @param {string} keyword - Search keyword (pinyin, code, or name)
  * @returns {Promise<Array>} Array of matching stocks
@@ -115,9 +117,21 @@ export const searchStocksAPI = async (keyword) => {
     if (!keyword || keyword.trim().length === 0) return [];
 
     const trimmedKeyword = keyword.trim();
+
+    // Step 1: Search in local database first (instant, always works)
+    const localResults = searchLocalDatabase(trimmedKeyword);
+    console.log(`✅ Local database found ${localResults.length} results`);
+
+    // If we found results in local database, return them
+    if (localResults.length > 0) {
+        console.log('📦 Using local database results (reliable)');
+        return localResults;
+    }
+
+    // Step 2: If not found locally, try online API
+    console.log('🌐 Searching online API...');
     const url = `https://smartbox.gtimg.cn/s3/?v=2&q=${encodeURIComponent(trimmedKeyword)}&t=all`;
 
-    // List of CORS proxies to try (in order of reliability)
     const proxyConfigs = [
         {
             name: 'Direct',
@@ -157,9 +171,8 @@ export const searchStocksAPI = async (keyword) => {
             }
 
             const text = await res.text();
-
-            // Parse the response
             const match = text.match(/v_hint="(.*?)";/);
+
             if (match && match[1]) {
                 const items = match[1].split('^');
                 const results = items.map(item => {
@@ -176,7 +189,7 @@ export const searchStocksAPI = async (keyword) => {
                 }).filter(Boolean);
 
                 if (results.length > 0) {
-                    console.log(`✅ Search successful via ${config.name}: Found ${results.length} results`);
+                    console.log(`✅ Online search successful via ${config.name}: Found ${results.length} results`);
                     return results;
                 }
             }
@@ -188,6 +201,7 @@ export const searchStocksAPI = async (keyword) => {
         }
     }
 
-    console.error('❌ All search proxies failed. Please check your network connection.');
+    // Step 3: If all else fails, return empty array
+    console.warn('⚠️ Online search failed, no results found');
     return [];
 };
