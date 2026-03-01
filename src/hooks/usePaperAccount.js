@@ -1,9 +1,12 @@
 /**
  * Custom Hook for Paper Trading Account Management
- * Handles all paper trading operations and state
+ * Handles all paper trading operations and state with localStorage persistence
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { storageGet, storageSet } from './useLocalStorage';
+
+const STORAGE_KEY = 'paper_account';
 
 const INITIAL_ACCOUNT = {
     initialCash: 1000000,
@@ -13,7 +16,14 @@ const INITIAL_ACCOUNT = {
 };
 
 export const usePaperAccount = (updatePortfolioPrices) => {
-    const [paperAccount, setPaperAccount] = useState(INITIAL_ACCOUNT);
+    const [paperAccount, setPaperAccount] = useState(() => {
+        return storageGet(STORAGE_KEY, INITIAL_ACCOUNT);
+    });
+
+    // Persist to localStorage whenever account changes
+    useEffect(() => {
+        storageSet(STORAGE_KEY, paperAccount);
+    }, [paperAccount]);
 
     // Update portfolio prices when positions change
     useEffect(() => {
@@ -22,14 +32,11 @@ export const usePaperAccount = (updatePortfolioPrices) => {
 
     /**
      * Execute a paper trade (buy or sell)
-     * @param {string} type - 'BUY' or 'SELL'
-     * @param {Object} stock - Stock object with code and name
-     * @param {number} shares - Number of shares to trade
-     * @param {number} currentPrice - Current market price
-     * @param {string} dateStr - Date string for the trade
+     * Returns { success: boolean, message: string } instead of using alert()
      */
-    const executePaperTrade = (type, stock, shares, currentPrice, dateStr) => {
+    const executePaperTrade = useCallback((type, stock, shares, currentPrice, dateStr) => {
         const totalAmount = currentPrice * shares;
+        let result = { success: false, message: '' };
 
         setPaperAccount(prev => {
             let newCash = prev.cash;
@@ -37,7 +44,7 @@ export const usePaperAccount = (updatePortfolioPrices) => {
 
             if (type === 'BUY') {
                 if (newCash < totalAmount) {
-                    alert('资金不足，无法买入！');
+                    result = { success: false, message: '资金不足，无法买入！' };
                     return prev;
                 }
                 newCash -= totalAmount;
@@ -49,10 +56,11 @@ export const usePaperAccount = (updatePortfolioPrices) => {
                     shares: newShares,
                     avgCost: totalCost / newShares
                 };
+                result = { success: true, message: `成功买入 ${stock.name} ${shares}股，成交金额 ¥${totalAmount.toLocaleString()}` };
             } else {
                 const existingPos = newPositions[stock.code];
                 if (!existingPos || existingPos.shares < shares) {
-                    alert('持仓不足，无法卖出！');
+                    result = { success: false, message: '持仓不足，无法卖出！' };
                     return prev;
                 }
                 newCash += totalAmount;
@@ -62,6 +70,7 @@ export const usePaperAccount = (updatePortfolioPrices) => {
                 } else {
                     newPositions[stock.code] = { ...existingPos, shares: newShares };
                 }
+                result = { success: true, message: `成功卖出 ${stock.name} ${shares}股，回收金额 ¥${totalAmount.toLocaleString()}` };
             }
 
             const newTrade = {
@@ -75,15 +84,14 @@ export const usePaperAccount = (updatePortfolioPrices) => {
             };
             return { ...prev, cash: newCash, positions: newPositions, history: [newTrade, ...prev.history] };
         });
-    };
+
+        return result;
+    }, []);
 
     /**
      * Add manual position entry
-     * @param {Object} stock - Stock object with code and name
-     * @param {number} cost - Cost price per share
-     * @param {number} shares - Number of shares
      */
-    const addManualPosition = (stock, cost, shares) => {
+    const addManualPosition = useCallback((stock, cost, shares) => {
         const totalAmount = cost * shares;
 
         setPaperAccount(prev => {
@@ -112,11 +120,19 @@ export const usePaperAccount = (updatePortfolioPrices) => {
             };
             return { ...prev, cash: newCash, positions: newPositions, history: [newTrade, ...prev.history] };
         });
-    };
+    }, []);
+
+    /**
+     * Reset account to initial state
+     */
+    const resetAccount = useCallback(() => {
+        setPaperAccount(INITIAL_ACCOUNT);
+    }, []);
 
     return {
         paperAccount,
         executePaperTrade,
-        addManualPosition
+        addManualPosition,
+        resetAccount
     };
 };

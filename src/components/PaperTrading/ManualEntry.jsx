@@ -4,16 +4,18 @@
  */
 
 import React, { useState } from 'react';
+import { useToast } from '../Toast';
 
 const ManualEntry = ({ selectedStock, onAddPosition, onCancel }) => {
     const [manualCost, setManualCost] = useState('');
     const [manualShares, setManualShares] = useState('');
+    const toast = useToast();
 
     const handleSubmit = () => {
         const cost = Number(manualCost);
         const shares = Number(manualShares);
         if (cost <= 0 || shares <= 0) {
-            alert('请输入有效的成本和股数');
+            toast.warning('请输入有效的成本和股数');
             return;
         }
         onAddPosition(cost, shares);

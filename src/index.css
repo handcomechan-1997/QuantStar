@@ -60,3 +60,107 @@ body {
 .markdown-content tr:hover {
   background-color: rgba(51, 65, 85, 0.3);
 }
+
+/* Toast slide-in animation */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Modal scale-in animation */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Responsive: Mobile layout */
+@media (max-width: 900px) {
+  /* Stack layout vertically */
+  .flex-1.flex.overflow-hidden {
+    flex-direction: column;
+  }
+
+  /* Sidebar: full width at bottom */
+  .sidebar-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid #1e293b;
+    height: 50vh;
+    min-height: 300px;
+  }
+
+  /* Chart: reduce height */
+  .h-\[600px\] {
+    height: 350px !important;
+  }
+
+  /* Header: stack items */
+  header {
+    height: auto !important;
+    flex-wrap: wrap;
+    padding: 8px 12px !important;
+    gap: 8px;
+  }
+
+  header > .flex.items-center.w-64 {
+    width: auto !important;
+  }
+
+  header > .w-64.flex {
+    width: auto !important;
+  }
+
+  header > .flex-1.max-w-3xl {
+    order: 3;
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Even smaller screens */
+  .sidebar-panel {
+    height: 60vh;
+  }
+
+  .h-\[600px\] {
+    height: 280px !important;
+  }
+
+  /* Stack backtest result grid */
+  .grid.grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Smaller padding */
+  main.flex-1 {
+    padding: 8px !important;
+  }
+}

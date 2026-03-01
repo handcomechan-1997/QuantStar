@@ -1,13 +1,15 @@
 /**
- * QuantStar - Professional A-Share Trading Platform v4.0
+ * QuantStar - Professional A-Share Trading Platform v5.0
  * Main Application Component
  * 
  * Features:
  * - Real-time stock data fetching
- * - Interactive K-line charts
- * - Paper trading simulation
- * - Strategy backtesting
+ * - Interactive K-line charts with volume and technical indicators
+ * - Paper trading simulation with trade confirmation
+ * - Strategy backtesting with equity curve
  * - AI-powered investment advice
+ * - localStorage persistence
+ * - Toast notification system
  */
 
 import React, { useState, useCallback } from 'react';
@@ -17,6 +19,7 @@ import { Cpu, MessageSquare, Briefcase } from 'lucide-react';
 import { useStockData } from './hooks/useStockData';
 import { usePaperAccount } from './hooks/usePaperAccount';
 import { useSearch } from './hooks/useSearch';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 // Components
 import Header from './components/Header';
@@ -25,6 +28,7 @@ import PaperTrading from './components/PaperTrading/PaperTrading';
 import StrategyBuilder from './components/Strategy/StrategyBuilder';
 import BacktestResult from './components/Strategy/BacktestResult';
 import AIAdvisor from './components/AIAdvisor/AIAdvisor';
+import { ToastProvider } from './components/Toast';
 
 // Default watchlist
 const DEFAULT_WATCHLIST = [
@@ -34,20 +38,11 @@ const DEFAULT_WATCHLIST = [
     { code: '300750', name: '宁德时代' }
 ];
 
-function App() {
-    // Global State
-    const [watchlist, setWatchlist] = useState(DEFAULT_WATCHLIST);
-    const [selectedStock, setSelectedStock] = useState(DEFAULT_WATCHLIST[0]);
-
-    // UI Layout State
-    const [activeRightTab, setActiveRightTab] = useState('PAPER');
-
-    // Strategy State
-    const [backtestResult, setBacktestResult] = useState(null);
-    const [backtestTrades, setBacktestTrades] = useState([]);
-
-    // AI Advisor State - Persistent chat history
-    const [chatMessages, setChatMessages] = useState([
+function AppContent() {
+    // Persisted State (survives refresh)
+    const [watchlist, setWatchlist] = useLocalStorage('watchlist', DEFAULT_WATCHLIST);
+    const [selectedStock, setSelectedStock] = useLocalStorage('selected_stock', DEFAULT_WATCHLIST[0]);
+    const [chatMessages, setChatMessages] = useLocalStorage('chat_messages', [
         {
             role: 'ai',
             content:
@@ -55,11 +50,18 @@ function App() {
         }
     ]);
 
+    // UI Layout State (not persisted)
+    const [activeRightTab, setActiveRightTab] = useState('PAPER');
+
+    // Strategy State
+    const [backtestResult, setBacktestResult] = useState(null);
+    const [backtestTrades, setBacktestTrades] = useState([]);
+
     // Custom Hooks
     const { marketData, isLoadingData, dataError, portfolioPrices, updatePortfolioPrices } =
         useStockData(selectedStock);
 
-    const { paperAccount, executePaperTrade, addManualPosition } =
+    const { paperAccount, executePaperTrade, addManualPosition, resetAccount } =
         usePaperAccount(updatePortfolioPrices);
 
     const {
@@ -80,11 +82,11 @@ function App() {
         } else {
             setWatchlist(prev => [...prev, selectedStock]);
         }
-    }, [watchlist, selectedStock]);
+    }, [watchlist, selectedStock, setWatchlist]);
 
     const handleSelectStock = useCallback((stock) => {
         setSelectedStock(stock);
-    }, []);
+    }, [setSelectedStock]);
 
     const handleBacktestComplete = useCallback((trades, result) => {
         setBacktestTrades(trades);
@@ -118,7 +120,7 @@ function App() {
             {/* Main Content Layout */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Area: Chart */}
-                <main className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar">
+                <main className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar min-w-0">
                     <StockChart
                         selectedStock={selectedStock}
                         marketData={marketData}
@@ -135,7 +137,7 @@ function App() {
                 </main>
 
                 {/* Right Area: Sidebar Tabs */}
-                <aside className="w-[420px] border-l border-slate-800 bg-[#0f1423] flex flex-col z-10 shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.1)]">
+                <aside className="w-[420px] max-w-[420px] border-l border-slate-800 bg-[#0f1423] flex flex-col z-10 shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] sidebar-panel">
                     {/* Tab Navigation */}
                     <div className="flex border-b border-slate-800 bg-slate-900/30">
                         {['STRATEGY', 'PAPER', 'AI'].map(tab => (
@@ -187,6 +189,7 @@ function App() {
                             portfolioPrices={portfolioPrices}
                             onExecuteTrade={executePaperTrade}
                             onAddManualPosition={addManualPosition}
+                            onResetAccount={resetAccount}
                             onSelectStock={(code) => setSearchQuery(code)}
                         />
                     )}
@@ -225,6 +228,14 @@ function App() {
                 }}
             />
         </div>
+    );
+}
+
+function App() {
+    return (
+        <ToastProvider>
+            <AppContent />
+        </ToastProvider>
     );
 }
 
