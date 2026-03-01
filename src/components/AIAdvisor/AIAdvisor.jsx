@@ -12,18 +12,12 @@ const AIAdvisor = ({
     marketData,
     paperAccount,
     portfolioPrices,
-    onAnalyzePortfolio
+    chatMessages,
+    setChatMessages
 }) => {
     // Read API key from environment variable (set in .env.local)
     const [apiKey, setApiKey] = useState(process.env.REACT_APP_DEEPSEEK_API_KEY || '');
     const [showApiSettings, setShowApiSettings] = useState(false);
-    const [chatMessages, setChatMessages] = useState([
-        {
-            role: 'ai',
-            content:
-                '您好！我是您的专属 AI 投顾。我可以帮您分析当前股票走势，或者诊断您的模拟账户持仓，给出调仓建议。'
-        }
-    ]);
     const [userInput, setUserInput] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 

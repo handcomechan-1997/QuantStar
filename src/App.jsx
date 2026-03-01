@@ -46,6 +46,15 @@ function App() {
     const [backtestResult, setBacktestResult] = useState(null);
     const [backtestTrades, setBacktestTrades] = useState([]);
 
+    // AI Advisor State - Persistent chat history
+    const [chatMessages, setChatMessages] = useState([
+        {
+            role: 'ai',
+            content:
+                '您好！我是您的专属 AI 投顾。我可以帮您分析当前股票走势，或者诊断您的模拟账户持仓，给出调仓建议。'
+        }
+    ]);
+
     // Custom Hooks
     const { marketData, isLoadingData, dataError, portfolioPrices, updatePortfolioPrices } =
         useStockData(selectedStock);
@@ -189,6 +198,8 @@ function App() {
                             marketData={marketData}
                             paperAccount={paperAccount}
                             portfolioPrices={portfolioPrices}
+                            chatMessages={chatMessages}
+                            setChatMessages={setChatMessages}
                         />
                     )}
 
