@@ -17,3 +17,46 @@ body {
   padding: 0;
   background-color: #0b0f19;
 }
+
+/* Markdown Content Styles */
+.markdown-content {
+  line-height: 1.6;
+}
+
+.markdown-content > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Smooth scrolling for markdown content */
+.markdown-content {
+  scroll-behavior: smooth;
+}
+
+/* Code block styling */
+.markdown-content pre {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+}
+
+.markdown-content code {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Table styling */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.markdown-content th {
+  background-color: #1e293b;
+  font-weight: 600;
+}
+
+.markdown-content tr:hover {
+  background-color: rgba(51, 65, 85, 0.3);
+}
