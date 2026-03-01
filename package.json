@@ -2,7 +2,6 @@
   "name": "quantstar",
   "version": "4.0.0",
   "description": "Professional A-Share Trading Platform with Real-time Data, Paper Trading, and AI Advisor",
-  "homepage": "https://handcomechan-1997.github.io/QuantStar",
   "private": true,
   "dependencies": {
     "echarts": "^5.4.3",
