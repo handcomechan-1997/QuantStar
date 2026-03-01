@@ -1,0 +1,220 @@
+/**
+ * QuantStar - Professional A-Share Trading Platform v4.0
+ * Main Application Component
+ * 
+ * Features:
+ * - Real-time stock data fetching
+ * - Interactive K-line charts
+ * - Paper trading simulation
+ * - Strategy backtesting
+ * - AI-powered investment advice
+ */
+
+import React, { useState, useCallback } from 'react';
+import { Cpu, MessageSquare, Briefcase } from 'lucide-react';
+
+// Hooks
+import { useStockData } from './hooks/useStockData';
+import { usePaperAccount } from './hooks/usePaperAccount';
+import { useSearch } from './hooks/useSearch';
+
+// Components
+import Header from './components/Header';
+import StockChart from './components/StockChart';
+import PaperTrading from './components/PaperTrading/PaperTrading';
+import StrategyBuilder from './components/Strategy/StrategyBuilder';
+import BacktestResult from './components/Strategy/BacktestResult';
+import AIAdvisor from './components/AIAdvisor/AIAdvisor';
+
+// Default watchlist
+const DEFAULT_WATCHLIST = [
+    { code: '600519', name: '贵州茅台' },
+    { code: '000001', name: '平安银行' },
+    { code: '002594', name: '比亚迪' },
+    { code: '300750', name: '宁德时代' }
+];
+
+function App() {
+    // Global State
+    const [watchlist, setWatchlist] = useState(DEFAULT_WATCHLIST);
+    const [selectedStock, setSelectedStock] = useState(DEFAULT_WATCHLIST[0]);
+
+    // UI Layout State
+    const [activeRightTab, setActiveRightTab] = useState('PAPER');
+
+    // Strategy State
+    const [backtestResult, setBacktestResult] = useState(null);
+    const [backtestTrades, setBacktestTrades] = useState([]);
+
+    // Custom Hooks
+    const { marketData, isLoadingData, dataError, portfolioPrices, updatePortfolioPrices } =
+        useStockData(selectedStock);
+
+    const { paperAccount, executePaperTrade, addManualPosition } =
+        usePaperAccount(updatePortfolioPrices);
+
+    const {
+        searchQuery,
+        setSearchQuery,
+        searchResults,
+        isSearching,
+        showDropdown,
+        setShowDropdown,
+        searchError,
+        handleSelectSearchedStock
+    } = useSearch();
+
+    // Handlers
+    const toggleWatchlist = useCallback(() => {
+        if (watchlist.some(s => s.code === selectedStock.code)) {
+            setWatchlist(prev => prev.filter(s => s.code !== selectedStock.code));
+        } else {
+            setWatchlist(prev => [...prev, selectedStock]);
+        }
+    }, [watchlist, selectedStock]);
+
+    const handleSelectStock = useCallback((stock) => {
+        setSelectedStock(stock);
+    }, []);
+
+    const handleBacktestComplete = useCallback((trades, result) => {
+        setBacktestTrades(trades);
+        setBacktestResult(result);
+    }, []);
+
+    const isWatchlisted = watchlist.some(s => s.code === selectedStock.code);
+
+    return (
+        <div className="flex flex-col h-screen bg-[#0b0f19] text-slate-200 font-sans overflow-hidden">
+            {/* Top Navigation Bar */}
+            <Header
+                selectedStock={selectedStock}
+                watchlist={watchlist}
+                isWatchlisted={isWatchlisted}
+                marketData={marketData}
+                isLoadingData={isLoadingData}
+                dataError={dataError}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchResults={searchResults}
+                isSearching={isSearching}
+                showDropdown={showDropdown}
+                setShowDropdown={setShowDropdown}
+                searchError={searchError}
+                handleSelectSearchedStock={handleSelectSearchedStock}
+                onToggleWatchlist={toggleWatchlist}
+                onSelectStock={handleSelectStock}
+            />
+
+            {/* Main Content Layout */}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Left Area: Chart */}
+                <main className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar">
+                    <StockChart
+                        selectedStock={selectedStock}
+                        marketData={marketData}
+                        backtestTrades={backtestTrades}
+                        paperAccount={paperAccount}
+                        isWatchlisted={isWatchlisted}
+                        onToggleWatchlist={toggleWatchlist}
+                    />
+
+                    {/* Backtest Result */}
+                    {backtestResult && activeRightTab === 'STRATEGY' && (
+                        <BacktestResult result={backtestResult} />
+                    )}
+                </main>
+
+                {/* Right Area: Sidebar Tabs */}
+                <aside className="w-[420px] border-l border-slate-800 bg-[#0f1423] flex flex-col z-10 shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.1)]">
+                    {/* Tab Navigation */}
+                    <div className="flex border-b border-slate-800 bg-slate-900/30">
+                        {['STRATEGY', 'PAPER', 'AI'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveRightTab(tab)}
+                                className={`flex-1 py-4 text-[13px] font-medium flex justify-center items-center transition-colors relative ${
+                                    activeRightTab === tab
+                                        ? 'text-white'
+                                        : 'text-slate-500 hover:text-slate-300'
+                                }`}
+                            >
+                                {tab === 'STRATEGY' && (
+                                    <>
+                                        <Cpu size={14} className="mr-1.5" /> 策略
+                                    </>
+                                )}
+                                {tab === 'PAPER' && (
+                                    <>
+                                        <Briefcase size={14} className="mr-1.5" /> 模拟盘
+                                    </>
+                                )}
+                                {tab === 'AI' && (
+                                    <>
+                                        <MessageSquare size={14} className="mr-1.5" /> AI 投顾
+                                    </>
+                                )}
+                                {activeRightTab === tab && (
+                                    <div
+                                        className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                                            tab === 'PAPER'
+                                                ? 'bg-emerald-500'
+                                                : tab === 'AI'
+                                                    ? 'bg-purple-500'
+                                                    : 'bg-blue-500'
+                                        }`}
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Tab Content: PAPER TRADING */}
+                    {activeRightTab === 'PAPER' && (
+                        <PaperTrading
+                            selectedStock={selectedStock}
+                            marketData={marketData}
+                            paperAccount={paperAccount}
+                            portfolioPrices={portfolioPrices}
+                            onExecuteTrade={executePaperTrade}
+                            onAddManualPosition={addManualPosition}
+                            onSelectStock={(code) => setSearchQuery(code)}
+                        />
+                    )}
+
+                    {/* Tab Content: AI ADVISOR */}
+                    {activeRightTab === 'AI' && (
+                        <AIAdvisor
+                            selectedStock={selectedStock}
+                            marketData={marketData}
+                            paperAccount={paperAccount}
+                            portfolioPrices={portfolioPrices}
+                        />
+                    )}
+
+                    {/* Tab Content: STRATEGY */}
+                    {activeRightTab === 'STRATEGY' && (
+                        <StrategyBuilder
+                            marketData={marketData}
+                            onBacktestComplete={handleBacktestComplete}
+                        />
+                    )}
+                </aside>
+            </div>
+
+            {/* Custom Scrollbar Styles */}
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+            `
+                }}
+            />
+        </div>
+    );
+}
+
+export default App;
