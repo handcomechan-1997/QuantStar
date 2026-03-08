@@ -1,19 +1,19 @@
 /**
- * Stock Chart Component
- * Displays K-line chart with volume, technical indicators, and timeframe selector
+ * Stock Chart Component - Enhanced UI
+ * Displays K-line chart with volume, technical indicators, and enhanced toolbar
  */
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as echarts from 'echarts';
-import { Star } from 'lucide-react';
+import { Star, Camera, Maximize2, TrendingUp, TrendingDown } from 'lucide-react';
 import { calculateSMA, calculateRSI, calculateMACD, calculateBollingerBands } from '../utils/indicators';
 
 // Indicator configuration
 const INDICATOR_OPTIONS = [
-    { key: 'MA', label: 'MA均线' },
-    { key: 'BOLL', label: '布林带' },
-    { key: 'RSI', label: 'RSI' },
-    { key: 'MACD', label: 'MACD' }
+    { key: 'MA', label: 'MA', color: 'blue' },
+    { key: 'BOLL', label: 'BOLL', color: 'orange' },
+    { key: 'RSI', label: 'RSI', color: 'cyan' },
+    { key: 'MACD', label: 'MACD', color: 'purple' }
 ];
 
 /**
@@ -373,43 +373,78 @@ const StockChart = ({
         };
     }, []);
 
-    const timeframeLabel = { day: '日线', week: '周线', month: '月线' };
+    const timeframeLabel = { day: '日K', week: '周K', month: '月K' };
+
+    // Calculate price change
+    const latestPrice = chartData[chartData.length - 1]?.close || 0;
+    const prevPrice = chartData[chartData.length - 2]?.close || 0;
+    const priceChange = latestPrice - prevPrice;
+    const priceChangePercent = prevPrice > 0 ? ((priceChange / prevPrice) * 100).toFixed(2) : '0.00';
+    const isUp = priceChange >= 0;
 
     return (
         <>
-            <div className="flex justify-between items-end px-2 flex-wrap gap-2">
-                <div className="flex items-center">
-                    <h2 className="text-3xl font-bold text-white tracking-tight mr-3">
-                        {selectedStock.name}
-                    </h2>
-                    <button
-                        onClick={onToggleWatchlist}
-                        className={`p-1.5 rounded-lg border transition ${
-                            isWatchlisted
-                                ? 'bg-yellow-500/10 border-yellow-500/50 text-yellow-500'
-                                : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-white'
-                        }`}
-                        title={isWatchlisted ? '取消自选' : '加入自选'}
-                    >
-                        <Star size={18} className={isWatchlisted ? 'fill-current' : ''} />
-                    </button>
-                    <span className="text-slate-400 font-mono text-sm ml-4">
-                        {selectedStock.code} · 前复权{timeframeLabel[timeframe]}
-                    </span>
+            {/* Enhanced Header Section */}
+            <div className="flex justify-between items-start px-2 mb-4 flex-wrap gap-3">
+                {/* Left: Stock Info */}
+                <div className="flex items-center gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h2 className="text-3xl font-bold text-white tracking-tight">
+                                {selectedStock.name}
+                            </h2>
+                            <button
+                                onClick={onToggleWatchlist}
+                                className={`p-1.5 rounded-lg border transition-all duration-200 ${
+                                    isWatchlisted
+                                        ? 'bg-yellow-500/15 border-yellow-500/40 text-yellow-500 shadow-lg shadow-yellow-500/10'
+                                        : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-white hover:border-slate-600'
+                                }`}
+                                title={isWatchlisted ? '取消自选' : '加入自选'}
+                            >
+                                <Star size={16} className={isWatchlisted ? 'fill-current' : ''} />
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-slate-500 font-mono">
+                                {selectedStock.code}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                前复权
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Price Display */}
+                    <div className="flex flex-col items-end">
+                        <div className={`text-2xl font-bold font-mono price-tag ${
+                            isUp ? 'text-red-500' : 'text-emerald-500'
+                        }`}>
+                            ¥{latestPrice.toFixed(2)}
+                        </div>
+                        <div className={`flex items-center gap-1 text-sm ${
+                            isUp ? 'text-red-400' : 'text-emerald-400'
+                        }`}>
+                            {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                            <span className="font-mono">
+                                {isUp ? '+' : ''}{priceChange.toFixed(2)} ({isUp ? '+' : ''}{priceChangePercent}%)
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Toolbar: Timeframe + Indicators */}
-                <div className="flex items-center gap-2 flex-wrap">
-                    {/* Timeframe selector */}
-                    <div className="flex bg-slate-800/80 rounded-lg p-0.5 border border-slate-700/50">
+                {/* Right: Toolbar */}
+                <div className="flex items-center gap-3">
+                    {/* Timeframe Group */}
+                    <div className="flex bg-slate-800/80 rounded-lg p-1 border border-slate-700/50 backdrop-blur-sm">
                         {['day', 'week', 'month'].map(tf => (
                             <button
                                 key={tf}
                                 onClick={() => setTimeframe(tf)}
-                                className={`px-2.5 py-1 text-xs rounded-md transition ${
+                                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
                                     timeframe === tf
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-slate-400 hover:text-white'
+                                        ? 'bg-blue-600 text-white shadow-lg'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
                                 }`}
                             >
                                 {timeframeLabel[tf]}
@@ -417,26 +452,71 @@ const StockChart = ({
                         ))}
                     </div>
 
-                    {/* Indicator toggles */}
-                    <div className="flex gap-1">
+                    {/* Indicator Toggles */}
+                    <div className="flex gap-1.5">
                         {INDICATOR_OPTIONS.map(ind => (
                             <button
                                 key={ind.key}
                                 onClick={() => toggleIndicator(ind.key)}
-                                className={`px-2 py-1 text-[11px] rounded-md border transition ${
+                                className={`px-3 py-1.5 text-[11px] font-medium rounded-lg border transition-all duration-200 ${
                                     activeIndicators.includes(ind.key)
-                                        ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                                        : 'bg-slate-800/50 border-slate-700/50 text-slate-500 hover:text-slate-300'
+                                        ? `bg-${ind.color}-500/15 border-${ind.color}-500/40 text-${ind.color}-400`
+                                        : 'bg-slate-800/50 border-slate-700/50 text-slate-500 hover:text-slate-300 hover:border-slate-600'
                                 }`}
+                                style={{
+                                    backgroundColor: activeIndicators.includes(ind.key)
+                                        ? ind.color === 'blue' ? 'rgba(59, 130, 246, 0.15)'
+                                        : ind.color === 'orange' ? 'rgba(249, 115, 22, 0.15)'
+                                        : ind.color === 'cyan' ? 'rgba(6, 182, 212, 0.15)'
+                                        : 'rgba(139, 92, 246, 0.15)'
+                                        : undefined,
+                                    borderColor: activeIndicators.includes(ind.key)
+                                        ? ind.color === 'blue' ? 'rgba(59, 130, 246, 0.4)'
+                                        : ind.color === 'orange' ? 'rgba(249, 115, 22, 0.4)'
+                                        : ind.color === 'cyan' ? 'rgba(6, 182, 212, 0.4)'
+                                        : 'rgba(139, 92, 246, 0.4)'
+                                        : undefined,
+                                    color: activeIndicators.includes(ind.key)
+                                        ? ind.color === 'blue' ? 'rgb(96, 165, 250)'
+                                        : ind.color === 'orange' ? 'rgb(251, 146, 60)'
+                                        : ind.color === 'cyan' ? 'rgb(34, 211, 238)'
+                                        : 'rgb(167, 139, 250)'
+                                        : undefined
+                                }}
                             >
                                 {ind.label}
                             </button>
                         ))}
                     </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-1.5">
+                        <button
+                            className="p-2 rounded-lg border border-slate-700/50 bg-slate-800/50
+                                text-slate-500 hover:text-white hover:border-slate-600
+                                transition-all duration-200"
+                            title="截图"
+                        >
+                            <Camera size={14} />
+                        </button>
+                        <button
+                            className="p-2 rounded-lg border border-slate-700/50 bg-slate-800/50
+                                text-slate-500 hover:text-white hover:border-slate-600
+                                transition-all duration-200"
+                            title="全屏"
+                        >
+                            <Maximize2 size={14} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div className="w-full h-[600px] bg-[#0f1423] rounded-2xl border border-slate-800 relative shadow-sm shrink-0">
+            {/* Chart Container */}
+            <div className="w-full h-[600px] bg-gradient-to-br from-[#0f1423] to-[#131a2a]
+                rounded-2xl border border-slate-800 relative shadow-xl overflow-hidden">
+                {/* Top highlight */}
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
+
                 <div ref={chartRef} className="w-full h-full"></div>
             </div>
         </>

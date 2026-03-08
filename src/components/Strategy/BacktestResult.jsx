@@ -1,5 +1,5 @@
 /**
- * Backtest Result Component
+ * Backtest Result Component - Enhanced UI
  * Displays backtest performance metrics with equity curve chart
  */
 
@@ -52,10 +52,10 @@ const BacktestResult = ({ result }) => {
             series: [{
                 type: 'line', data: equities,
                 smooth: true, symbol: 'none',
-                lineStyle: { width: 2, color: '#3b82f6' },
+                lineStyle: { width: 2.5, color: '#3b82f6' },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(59,130,246,0.3)' },
+                        { offset: 0, color: 'rgba(59,130,246,0.25)' },
                         { offset: 1, color: 'rgba(59,130,246,0.02)' }
                     ])
                 },
@@ -88,48 +88,87 @@ const BacktestResult = ({ result }) => {
     const isPositiveReturn = Number(result.totalReturn) >= 0;
 
     return (
-        <div className="bg-[#0f1423] rounded-2xl border border-slate-800 p-6 animate-in fade-in slide-in-from-bottom-4">
-            <h3 className="text-sm font-semibold text-slate-300 mb-5 flex items-center">
-                <LineChart size={16} className="mr-2 text-blue-400" /> 回测性能分析报告
+        <div className="bg-gradient-to-br from-[#0f1423] to-[#131a2a] rounded-2xl border border-slate-800/80 p-6
+            animate-fade-in-up shadow-xl">
+            {/* Header */}
+            <h3 className="text-sm font-semibold text-slate-300 mb-5 flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <LineChart size={14} className="text-blue-400" />
+                </div>
+                回测性能分析报告
             </h3>
 
-            {/* Metrics Grid */}
+            {/* Metrics Grid - Enhanced */}
             <div className="grid grid-cols-5 gap-3 mb-5">
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-                    <div className="text-slate-500 text-xs mb-1.5 font-medium">期末权益 (¥)</div>
-                    <div className="text-lg font-mono text-blue-400">
-                        {Number(result.finalCapital).toLocaleString()}
+                {/* Final Capital */}
+                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50
+                    hover:border-blue-500/30 transition-all">
+                    <div className="text-slate-500 text-[10px] mb-2 font-medium uppercase tracking-wider">
+                        期末权益
+                    </div>
+                    <div className="text-lg font-bold font-mono text-blue-400 price-tag">
+                        ¥{Number(result.finalCapital).toLocaleString()}
                     </div>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-                    <div className="text-slate-500 text-xs mb-1.5 font-medium flex items-center gap-1">
+
+                {/* Total Return */}
+                <div className={`p-4 rounded-xl border transition-all ${
+                    isPositiveReturn
+                        ? 'bg-red-500/5 border-red-500/20'
+                        : 'bg-emerald-500/5 border-emerald-500/20'
+                }`}>
+                    <div className={`text-[10px] mb-2 font-medium uppercase tracking-wider flex items-center gap-1 ${
+                        isPositiveReturn ? 'text-red-400' : 'text-emerald-400'
+                    }`}>
                         总收益率
-                        {isPositiveReturn ? <TrendingUp size={12} className="text-red-500" /> : <TrendingDown size={12} className="text-emerald-500" />}
+                        {isPositiveReturn
+                            ? <TrendingUp size={12} />
+                            : <TrendingDown size={12} />
+                        }
                     </div>
-                    <div className={`text-lg font-mono font-bold ${isPositiveReturn ? 'text-red-500' : 'text-emerald-500'}`}>
+                    <div className={`text-lg font-bold font-mono price-tag ${
+                        isPositiveReturn ? 'text-red-500' : 'text-emerald-500'
+                    }`}>
                         {result.totalReturn}%
                     </div>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-                    <div className="text-slate-500 text-xs mb-1.5 font-medium">最大回撤</div>
-                    <div className="text-lg font-mono text-yellow-500">-{result.maxDrawdown}%</div>
-                </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-                    <div className="text-slate-500 text-xs mb-1.5 font-medium flex items-center gap-1">
-                        <BarChart2 size={12} /> 胜率
+
+                {/* Max Drawdown */}
+                <div className="bg-yellow-500/5 p-4 rounded-xl border border-yellow-500/20">
+                    <div className="text-yellow-400 text-[10px] mb-2 font-medium uppercase tracking-wider">
+                        最大回撤
                     </div>
-                    <div className="text-lg font-mono text-slate-200">{result.winRate}%</div>
+                    <div className="text-lg font-bold font-mono text-yellow-500 price-tag">
+                        -{result.maxDrawdown}%
+                    </div>
                 </div>
-                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80">
-                    <div className="text-slate-500 text-xs mb-1.5 font-medium">交易对数</div>
-                    <div className="text-lg font-mono text-slate-200">{result.tradeCount}</div>
+
+                {/* Win Rate */}
+                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
+                    <div className="text-slate-500 text-[10px] mb-2 font-medium uppercase tracking-wider flex items-center gap-1">
+                        <BarChart2 size={10} />
+                        胜率
+                    </div>
+                    <div className="text-lg font-bold font-mono text-slate-200 price-tag">
+                        {result.winRate}%
+                    </div>
+                </div>
+
+                {/* Trade Count */}
+                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800/50">
+                    <div className="text-slate-500 text-[10px] mb-2 font-medium uppercase tracking-wider">
+                        交易对数
+                    </div>
+                    <div className="text-lg font-bold font-mono text-slate-200 price-tag">
+                        {result.tradeCount}
+                    </div>
                 </div>
             </div>
 
             {/* Equity Curve Chart */}
             {result.equityCurve && result.equityCurve.length > 0 && (
-                <div className="bg-slate-900/30 rounded-xl border border-slate-800/50 p-3">
-                    <div className="text-xs text-slate-500 mb-2 font-medium">权益曲线</div>
+                <div className="bg-slate-900/30 rounded-xl border border-slate-800/50 p-4">
+                    <div className="text-xs text-slate-500 mb-3 font-medium">权益曲线</div>
                     <div ref={chartRef} className="w-full h-[200px]"></div>
                 </div>
             )}

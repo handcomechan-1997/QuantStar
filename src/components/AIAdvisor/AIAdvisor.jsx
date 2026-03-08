@@ -1,10 +1,10 @@
 /**
- * AI Advisor Component
- * Main component for AI-powered investment advice
+ * AI Advisor Component - Enhanced UI
+ * Main component for AI-powered investment advice with modern chat interface
  */
 
 import React, { useState } from 'react';
-import { Cpu, Settings, Wallet, Send } from 'lucide-react';
+import { Cpu, Settings, Send, Sparkles, Zap } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 
 const AIAdvisor = ({
@@ -103,87 +103,134 @@ const AIAdvisor = ({
     };
 
     return (
-        <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in">
-            <div className="px-5 py-3 border-b border-slate-800 flex justify-between items-center bg-slate-900/20">
-                <span className="text-xs text-slate-400 flex items-center">
-                    <Cpu size={12} className="mr-1" /> AI 模型
+        <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Enhanced Header */}
+            <div className="px-5 py-3 border-b border-slate-800 flex justify-between items-center
+                bg-gradient-to-r from-purple-900/10 to-transparent">
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <Cpu size={14} className="text-purple-400" />
+                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-green-400
+                            animate-pulse" />
+                    </div>
+                    <span className="text-xs text-slate-400 font-medium">DeepSeek AI</span>
                     {apiKey && (
-                        <span className="ml-2 text-green-400 text-[10px]">● 已配置</span>
+                        <span className="ml-1 px-1.5 py-0.5 text-[9px] text-green-400 bg-green-500/10
+                            rounded border border-green-500/20">
+                            已连接
+                        </span>
                     )}
-                </span>
+                </div>
                 <button
                     onClick={() => setShowApiSettings(!showApiSettings)}
-                    className="text-slate-500 hover:text-purple-400"
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-purple-400 hover:bg-slate-800
+                        transition-all duration-200"
                 >
                     <Settings size={14} />
                 </button>
             </div>
 
+            {/* API Settings Panel */}
             {showApiSettings && (
-                <div className="px-5 py-3 bg-slate-900 border-b border-slate-800">
-                    <div className="text-[10px] text-slate-500 mb-1.5">
-                        DeepSeek API Key (已从环境变量加载)
+                <div className="px-5 py-4 bg-slate-900/50 border-b border-slate-800 animate-fade-in-up">
+                    <div className="text-[10px] text-slate-500 mb-2 uppercase tracking-wider">
+                        API Key 配置
                     </div>
                     <input
                         type="password"
                         value={apiKey}
                         onChange={e => setApiKey(e.target.value)}
-                        placeholder="DeepSeek API Key..."
-                        className="w-full bg-[#0b0f19] border border-slate-700 rounded-lg py-2 px-3 text-xs text-white outline-none focus:border-purple-500"
+                        placeholder="sk-..."
+                        className="w-full bg-slate-800 border-2 border-slate-700 rounded-xl py-2.5 px-4
+                            text-xs text-white font-mono
+                            focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10
+                            transition-all"
                     />
+                    <div className="text-[10px] text-slate-600 mt-2">
+                        从环境变量自动加载，也可手动输入
+                    </div>
                 </div>
             )}
 
-            <div className="px-4 py-2 border-b border-slate-800 bg-purple-900/10">
+            {/* Quick Action Button */}
+            <div className="px-4 py-3 border-b border-slate-800">
                 <button
                     onClick={handleAnalyzePortfolio}
-                    className="w-full py-2 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/30 text-purple-300 rounded-lg text-xs font-medium transition flex items-center justify-center"
+                    className="w-full py-2.5 bg-gradient-to-r from-purple-600/20 to-purple-500/20
+                        hover:from-purple-600/30 hover:to-purple-500/30
+                        border border-purple-500/30 text-purple-300 rounded-xl
+                        text-xs font-semibold transition-all duration-200
+                        flex items-center justify-center gap-2 group
+                        shadow-lg shadow-purple-500/5 hover:shadow-purple-500/10"
                 >
-                    <Wallet size={12} className="mr-1.5" /> 分析我的模拟持仓情况
+                    <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
+                    分析我的模拟持仓
+                    <Zap size={12} className="text-purple-400/50" />
                 </button>
             </div>
 
+            {/* Chat Messages Area */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                 {chatMessages.map((msg, idx) => (
                     <ChatMessage key={idx} message={msg} />
                 ))}
+
+                {/* Typing Indicator */}
                 {isAnalyzing && (
-                    <div className="flex items-start">
-                        <div className="w-5 h-5 rounded bg-purple-900/50 flex items-center justify-center mr-2 mt-1">
-                            <Cpu size={12} className="text-purple-400 animate-pulse" />
+                    <div className="flex items-start animate-fade-in-up">
+                        <div className="w-7 h-7 rounded-lg bg-purple-900/30 flex items-center justify-center mr-3 mt-0.5">
+                            <Cpu size={14} className="text-purple-400 animate-pulse" />
                         </div>
-                        <div className="bg-slate-800 border border-slate-700 p-3 rounded-2xl rounded-tl-sm text-xs text-purple-400 flex space-x-1">
-                            <span>模型思考中</span>
-                            <span className="animate-bounce">.</span>
-                            <span className="animate-bounce" style={{ animationDelay: '100ms' }}>
-                                .
-                            </span>
-                            <span className="animate-bounce" style={{ animationDelay: '200ms' }}>
-                                .
-                            </span>
+                        <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-2xl rounded-tl-sm">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1">
+                                    <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce-dot"
+                                        style={{ animationDelay: '0ms' }} />
+                                    <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce-dot"
+                                        style={{ animationDelay: '160ms' }} />
+                                    <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce-dot"
+                                        style={{ animationDelay: '320ms' }} />
+                                </div>
+                                <span className="text-xs text-purple-400">AI 正在分析...</span>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="p-4 bg-[#0f1423] border-t border-slate-800 shrink-0">
-                <div className="relative flex items-center bg-slate-900 border border-slate-700 rounded-xl focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500 p-1">
+            {/* Enhanced Input Area */}
+            <div className="p-4 bg-gradient-to-t from-[#0f1423] to-transparent border-t border-slate-800">
+                <div className="relative flex items-center bg-slate-900 border-2 border-slate-700
+                    rounded-2xl focus-within:border-purple-500 focus-within:ring-4 focus-within:ring-purple-500/10 p-1.5
+                    transition-all duration-200">
                     <input
                         type="text"
                         value={userInput}
                         onChange={e => setUserInput(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="例如：帮我分析下目前能买入吗？"
-                        className="w-full bg-transparent text-slate-200 text-sm py-2 pl-3 pr-2 focus:outline-none"
+                        placeholder="输入问题，如：分析下现在能买入吗？"
+                        className="w-full bg-transparent text-slate-200 text-sm py-2 pl-4 pr-2
+                            focus:outline-none placeholder:text-slate-600"
                         disabled={isAnalyzing}
                     />
                     <button
                         onClick={() => handleSendMessage()}
                         disabled={isAnalyzing || !userInput.trim()}
-                        className="bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 text-white w-8 h-8 flex justify-center items-center rounded-lg transition shrink-0 mr-1"
+                        className={`px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200
+                            flex items-center gap-1.5 ${
+                            userInput.trim() && !isAnalyzing
+                                ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/40 active:scale-95'
+                                : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                        }`}
                     >
-                        <Send size={14} className={userInput.trim() && !isAnalyzing ? 'ml-0.5' : ''} />
+                        <Send size={14} />
+                        <span className="hidden sm:inline">发送</span>
                     </button>
+                </div>
+
+                {/* Hint */}
+                <div className="text-[10px] text-slate-600 text-center mt-2">
+                    按 Enter 发送 · AI建议仅供参考，不构成投资建议
                 </div>
             </div>
         </div>

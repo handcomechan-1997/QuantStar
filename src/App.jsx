@@ -136,43 +136,46 @@ function AppContent() {
                     )}
                 </main>
 
-                {/* Right Area: Sidebar Tabs */}
-                <aside className="w-[420px] max-w-[420px] border-l border-slate-800 bg-[#0f1423] flex flex-col z-10 shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] sidebar-panel">
-                    {/* Tab Navigation */}
-                    <div className="flex border-b border-slate-800 bg-slate-900/30">
+                {/* Right Area: Sidebar Tabs - Enhanced */}
+                <aside className="w-[420px] max-w-[420px] border-l border-slate-800 bg-[#0f1423]
+                    flex flex-col z-10 shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.1)] sidebar-panel">
+                    {/* Tab Navigation - Enhanced */}
+                    <div className="relative flex border-b border-slate-800 bg-slate-900/20">
                         {['STRATEGY', 'PAPER', 'AI'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveRightTab(tab)}
-                                className={`flex-1 py-4 text-[13px] font-medium flex justify-center items-center transition-colors relative ${
-                                    activeRightTab === tab
+                                className={`relative flex-1 py-4 text-[13px] font-medium
+                                    flex justify-center items-center gap-1.5 transition-all duration-200
+                                    ${activeRightTab === tab
                                         ? 'text-white'
                                         : 'text-slate-500 hover:text-slate-300'
-                                }`}
+                                    }`}
                             >
                                 {tab === 'STRATEGY' && (
                                     <>
-                                        <Cpu size={14} className="mr-1.5" /> 策略
+                                        <Cpu size={14} /> 策略
                                     </>
                                 )}
                                 {tab === 'PAPER' && (
                                     <>
-                                        <Briefcase size={14} className="mr-1.5" /> 模拟盘
+                                        <Briefcase size={14} /> 模拟盘
                                     </>
                                 )}
                                 {tab === 'AI' && (
                                     <>
-                                        <MessageSquare size={14} className="mr-1.5" /> AI 投顾
+                                        <MessageSquare size={14} /> AI 投顾
                                     </>
                                 )}
+                                {/* Active Indicator */}
                                 {activeRightTab === tab && (
                                     <div
-                                        className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                                        className={`absolute bottom-0 left-2 right-2 h-0.5 rounded-full transition-all duration-300 ${
                                             tab === 'PAPER'
-                                                ? 'bg-emerald-500'
+                                                ? 'bg-emerald-500 shadow-lg shadow-emerald-500/50'
                                                 : tab === 'AI'
-                                                    ? 'bg-purple-500'
-                                                    : 'bg-blue-500'
+                                                    ? 'bg-purple-500 shadow-lg shadow-purple-500/50'
+                                                    : 'bg-blue-500 shadow-lg shadow-blue-500/50'
                                         }`}
                                     />
                                 )}
@@ -180,39 +183,45 @@ function AppContent() {
                         ))}
                     </div>
 
-                    {/* Tab Content: PAPER TRADING */}
-                    {activeRightTab === 'PAPER' && (
-                        <PaperTrading
-                            selectedStock={selectedStock}
-                            marketData={marketData}
-                            paperAccount={paperAccount}
-                            portfolioPrices={portfolioPrices}
-                            onExecuteTrade={executePaperTrade}
-                            onAddManualPosition={addManualPosition}
-                            onResetAccount={resetAccount}
-                            onSelectStock={(code) => setSearchQuery(code)}
-                        />
-                    )}
+                    {/* Tab Content with Animation */}
+                    <div className="flex-1 overflow-hidden">
+                        {activeRightTab === 'PAPER' && (
+                            <div className="h-full animate-fade-in-up">
+                                <PaperTrading
+                                    selectedStock={selectedStock}
+                                    marketData={marketData}
+                                    paperAccount={paperAccount}
+                                    portfolioPrices={portfolioPrices}
+                                    onExecuteTrade={executePaperTrade}
+                                    onAddManualPosition={addManualPosition}
+                                    onResetAccount={resetAccount}
+                                    onSelectStock={(code) => setSearchQuery(code)}
+                                />
+                            </div>
+                        )}
 
-                    {/* Tab Content: AI ADVISOR */}
-                    {activeRightTab === 'AI' && (
-                        <AIAdvisor
-                            selectedStock={selectedStock}
-                            marketData={marketData}
-                            paperAccount={paperAccount}
-                            portfolioPrices={portfolioPrices}
-                            chatMessages={chatMessages}
-                            setChatMessages={setChatMessages}
-                        />
-                    )}
+                        {activeRightTab === 'AI' && (
+                            <div className="h-full animate-fade-in-up">
+                                <AIAdvisor
+                                    selectedStock={selectedStock}
+                                    marketData={marketData}
+                                    paperAccount={paperAccount}
+                                    portfolioPrices={portfolioPrices}
+                                    chatMessages={chatMessages}
+                                    setChatMessages={setChatMessages}
+                                />
+                            </div>
+                        )}
 
-                    {/* Tab Content: STRATEGY */}
-                    {activeRightTab === 'STRATEGY' && (
-                        <StrategyBuilder
-                            marketData={marketData}
-                            onBacktestComplete={handleBacktestComplete}
-                        />
-                    )}
+                        {activeRightTab === 'STRATEGY' && (
+                            <div className="h-full animate-fade-in-up">
+                                <StrategyBuilder
+                                    marketData={marketData}
+                                    onBacktestComplete={handleBacktestComplete}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </aside>
             </div>
 
